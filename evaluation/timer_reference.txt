@@ -1,0 +1,23 @@
+Godot 4 Timer debugging reference
+
+A Timer node uses wait_time to set its duration.
+Call start() to begin its countdown.
+Connect its timeout signal using:
+timer.timeout.connect(_on_timer_timeout)
+
+Example:
+extends Node
+
+@onready var timer: Timer = $Timer
+
+func _ready() -> void:
+    timer.wait_time = 2.0
+    timer.timeout.connect(_on_timer_timeout)
+    timer.start()
+
+func _on_timer_timeout() -> void:
+    print("Timer fired!")
+
+Check that the Timer node exists, is not paused,
+has a positive wait_time, and is started.
+Verify by checking the Output panel after two seconds.

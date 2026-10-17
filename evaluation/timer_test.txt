@@ -1,0 +1,3 @@
+In Godot 4, a Timer node never triggers its timeout signal.
+Give three diagnostic checks, a minimal working GDScript fix,
+and a verification step. Use correct Godot 4 APIs.
