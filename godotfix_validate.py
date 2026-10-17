@@ -4,7 +4,11 @@ import sys
 RULES = [
     (
         r'\.connect\s*\(\s*["\']',
-        "Possible Godot 3 signal syntax. In Godot 4, prefer signal.connect(callable).",
+        "Possible Godot 3 signal syntax. In Godot 4, use signal.connect(callable).",
+    ),
+    (
+        r'(?<![\w.])connect\s*\(\s*["\']',
+        "Possible Godot 3 signal syntax. In Godot 4, use timeout.connect(_on_timeout).",
     ),
     (
         r'\bset_timeout\s*\(',
@@ -16,11 +20,11 @@ RULES = [
     ),
     (
         r'\b(?:is_active|has_timeout_signal|has_timeout_callback)\s*\(',
-        "This looks like an unsupported Timer method. Check the official API docs.",
+        "Possible unsupported Timer method. Check the official API docs.",
     ),
     (
         r'\bpaused\s*\(',
-        "Timer.paused is a property, not a method. Use paused without parentheses.",
+        "Timer.paused is a property, not a method.",
     ),
 ]
 
@@ -41,4 +45,4 @@ if __name__ == "__main__":
             print(f"- {warning}")
     else:
         print("No known suspicious patterns detected.")
-        print("Note: this does not guarantee the code is correct.")
+        print("This does not guarantee the code is correct.")

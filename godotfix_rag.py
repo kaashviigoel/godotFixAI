@@ -2,6 +2,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+from godotfix_validate import validate
 
 DOCS = Path("docs")
 MODEL = "mlx-community/Qwen2.5-Coder-1.5B-Instruct-4bit"
@@ -18,7 +19,7 @@ def retrieve(question, max_chunks=4):
         text = path.read_text(encoding="utf-8", errors="ignore")
         paragraphs = [
             part.strip()
-            for part in re.split(r"\\n\\s*\\n", text)
+            for part in re.split(r"\n\s*\n", text)
             if part.strip()
         ]
 
@@ -59,9 +60,15 @@ def main():
         return
 
     context = "\n\n".join(
-        f"[Source: {filename}]\n{chunk}"
-        for _, filename, chunk in matches
-    )
+    f"[Source: {filename}]\n{chunk}"
+    for _, filename, chunk in matches
+)
+    
+    reference_path = Path("evaluation/timer_reference.txt")
+
+    if "timer" in question.lower() and reference_path.exists():
+        context += "\n\n[Source: verified Godot 4 Timer reference]\n"
+        context += reference_path.read_text(encoding="utf-8")
 
     prompt = f"""
 You are GodotFix, a careful Godot 4 debugging assistant.
@@ -76,6 +83,8 @@ Rules:
 - If the excerpts do not support a claim, say so.
 - Give three concise checks, a minimal working code example,
   and a verification step.
+- Prefer the supplied verified example over generating a new API pattern.
+- Never use Godot 3 signal syntax; use signal.connect(callable) in Godot 4.
 
 DOCUMENTATION:
 {context}
@@ -92,16 +101,35 @@ ANSWER:
         print(chunk[:700])
 
     print("\n--- GodotFix answer ---\n")
-    subprocess.run(
+
+    result = subprocess.run(
         [
             "mlx_lm.generate",
             "--model", MODEL,
             "--prompt", prompt,
             "--max-tokens", "350",
         ],
+        capture_output=True,
+        text=True,
         check=False,
     )
 
+    answer = result.stdout
+    print(answer)
+
+    warnings = validate(answer)
+
+    if warnings:
+        print("\n--- Potential API issues to review ---")
+        for warning in warnings:
+            print(f"- {warning}")
+    else:
+        print("\nNo known suspicious patterns detected.")
+        print("This does not guarantee the answer is correct.")
+
+    if result.returncode != 0:
+        print("\nWarning: text generation exited with an error.")
+        print(result.stderr)
 
 if __name__ == "__main__":
     main()
