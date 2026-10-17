@@ -1,0 +1,22 @@
+{
+  "question": "In Godot 4, my CharacterBody2D falls through the floor. Give three checks, a minimal code example if needed, and a verification step.",
+  "required_concepts": [
+    "CollisionShape2D",
+    "disabled",
+    "move_and_slide"
+  ],
+  "forbidden_patterns": [
+    "move_and_slide = true",
+    "PhysicsBody2D.MODE_KINEMATIC",
+    "physics_body2d.mode",
+    "shape.set_shape(Rect2",
+    "shape.set_polygon(",
+    "self.physics_body.use_floor",
+    "get_ground_normal("
+  ],
+  "reference_checks": [
+    "The character has a valid CollisionShape2D with a Shape2D resource.",
+    "The floor has a compatible collision shape and collision layers/masks.",
+    "CharacterBody2D movement uses move_and_slide() when appropriate."
+  ]
+}

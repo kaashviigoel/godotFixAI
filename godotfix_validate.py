@@ -26,6 +26,34 @@ RULES = [
         r'\bpaused\s*\(',
         "Timer.paused is a property, not a method.",
     ),
+    (
+        r'\b(?:collision_shape2d|collision_shape)\.(?:collision_layer|collision_mask)\b',
+        "Collision layers and masks belong to physics collision objects, not CollisionShape2D.",
+    ),
+    (
+        r'\bPhysicsBody2D\.MODE_KINEMATIC\b|\bphysics_body2d\.mode\b',
+        "This is not the correct Godot 4 CharacterBody2D setup. Check the official class docs.",
+    ),
+    (
+        r'\bphysics_body2d\b',
+        "Check whether physics_body2d is a real variable or node reference before using it.",
+    ),
+    (
+        r'\bmove_and_slide\s*=\s*',
+        "move_and_slide() is a method, not a Boolean property. Call move_and_slide().",
+    ),
+    (
+        r'\b(?:self\.)?gravity\s*=',
+        "CharacterBody2D has no built-in gravity property. Apply gravity through your script.",
+    ),
+    (
+        r'\.set_shape\s*\(\s*Rect2\s*\(',
+        "CollisionShape2D.shape expects a Shape2D resource, not a Rect2.",
+    ),
+    (
+        r'\bmove_and_slide\b.{0,80}\bInspector\b',
+        "move_and_slide() is a method, not an Inspector property.",
+    ),
 ]
 
 def validate(text):

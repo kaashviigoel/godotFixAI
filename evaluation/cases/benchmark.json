@@ -1,0 +1,32 @@
+[
+  {
+    "id": "timer",
+    "question": "In Godot 4, a Timer never fires. Give three checks and a minimal working example.",
+    "required": ["wait_time", "timeout", "start()"],
+    "forbidden": ["set_timeout(", "set_interval(", "paused()"]
+  },
+  {
+    "id": "characterbody2d",
+    "question": "In Godot 4, my CharacterBody2D falls through the floor. Give three checks and a minimal example.",
+    "required": ["CollisionShape2D", "disabled", "move_and_slide"],
+    "forbidden": ["move_and_slide = true", "get_ground_normal(", "PhysicsBody2D.MODE_KINEMATIC"]
+  },
+  {
+    "id": "signals",
+    "question": "In Godot 4, show how to connect a button's pressed signal to a callback.",
+    "required": ["pressed", "connect"],
+    "forbidden": ["connect(\"pressed\", self,"]
+  },
+  {
+    "id": "input",
+    "question": "In Godot 4, show how to check whether the ui_accept action was just pressed.",
+    "required": ["Input", "is_action_just_pressed", "ui_accept"],
+    "forbidden": ["is_action_just_pressed(\"ui_accept\", self"]
+  },
+  {
+    "id": "nodes",
+    "question": "In Godot 4, show how to safely get a child node named Player using GDScript.",
+    "required": ["get_node", "Player"],
+    "forbidden": ["get_node(\"Player\", true"]
+  }
+]

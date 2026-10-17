@@ -28,6 +28,26 @@ def retrieve(question, max_chunks=4):
                 paragraph = paragraph[:1800]
             chunks.append((path.name, paragraph))
 
+    q_lower = question.lower()
+
+    topic_files = {
+        "timer": ["timer_godot4.txt"],
+        "characterbody2d": ["character_body_2d_godot4.txt", "physics_body_2d_godot4.txt", "collision_shape_2d_godot4.txt"],
+        "collisionshape2d": ["collision_shape_2d_godot4.txt", "physics_body_2d_godot4.txt"],
+    }
+
+    preferred_files = set()
+    for topic, filenames in topic_files.items():
+        if topic in q_lower:
+            preferred_files.update(filenames)
+
+    if preferred_files:
+        chunks = [
+            (filename, chunk)
+            for filename, chunk in chunks
+            if filename in preferred_files
+        ]
+
     q_tokens = tokenize(question)
     api_names = [
         "wait_time", "timeout", "start", "is_stopped",
@@ -35,19 +55,64 @@ def retrieve(question, max_chunks=4):
     ]
     scored = []
 
-    for filename, chunk in chunks:
-        lower_chunk = chunk.lower()
-        score = len(q_tokens & tokenize(chunk))
+    q_lower = question.lower()
 
-        for api in api_names:
-            if api in question.lower() and api in lower_chunk:
-                score += 3
+    for filename, chunk in chunks:
+        if (
+            chunk.lstrip().startswith(("+---", "|", ".. _"))
+            or "class_" in chunk and len(tokenize(chunk)) < 8
+        ):
+            continue
+        
+        lower_chunk = chunk.lower()
+        chunk_tokens = tokenize(chunk)
+        score = len(q_tokens & chunk_tokens)
+
+        # Reward chunks containing the exact concepts asked about.
+        important_terms = [
+            "collision_shape2d", "collisionshape2d",
+            "collision_layer", "collision_mask",
+            "move_and_slide", "disabled", "shape",
+            "velocity", "is_on_floor",
+        ]
+
+        for term in important_terms:
+            if term in q_lower and term in lower_chunk:
+                score += 5
+
+        # Reward the relevant class documentation.
+        if "characterbody2d" in q_lower and "character_body_2d" in filename:
+            score += 3
+        if "collisionshape2d" in q_lower and "collision_shape_2d" in filename:
+            score += 3
+        if "timer" in q_lower and "timer" in filename:
+            score += 3
 
         if score:
             scored.append((score, filename, chunk))
 
     scored.sort(key=lambda item: item[0], reverse=True)
-    return scored[:max_chunks]
+
+    selected = []
+    seen_files = set()
+
+    for item in scored:
+        score, filename, chunk = item
+        if filename not in seen_files:
+            selected.append(item)
+            seen_files.add(filename)
+
+    # Then fill remaining slots with the highest-scoring chunks.
+    selected_ids = {id(item) for item in selected}
+
+    for item in scored:
+        if len(selected) >= max_chunks:
+            break
+        if id(item) not in selected_ids:
+            selected.append(item)
+            selected_ids.add(id(item))
+
+    return selected[:max_chunks]
 
 def main():
     question = " ".join(sys.argv[1:]).strip()
